@@ -1,4 +1,5 @@
 import io
+import logging
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -7,9 +8,21 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.lib.enums import TA_CENTER
 
+logger = logging.getLogger("learnbuddy.export")
 router = APIRouter()
+
+
+def xml_escape(text: str) -> str:
+    """Escape all XML special characters so ReportLab Paragraph never crashes."""
+    return (
+        text.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+            .replace("'", "&#39;")
+    )
 
 
 class ExportRequest(BaseModel):
@@ -23,63 +36,70 @@ async def export_pdf(req: ExportRequest):
     if not req.content.strip():
         raise HTTPException(status_code=400, detail="Content cannot be empty")
 
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4,
-                            rightMargin=inch * 0.75,
-                            leftMargin=inch * 0.75,
-                            topMargin=inch * 0.75,
-                            bottomMargin=inch * 0.75)
+    logger.info("Exporting PDF: '%s' (%d chars)", req.title, len(req.content))
+    try:
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=inch * 0.75,
+            leftMargin=inch * 0.75,
+            topMargin=inch * 0.75,
+            bottomMargin=inch * 0.75,
+        )
 
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle(
-        "CustomTitle",
-        parent=styles["Title"],
-        fontSize=18,
-        textColor=colors.HexColor("#1e40af"),
-        spaceAfter=20,
-        alignment=TA_CENTER,
-    )
-    heading_style = ParagraphStyle(
-        "CustomHeading",
-        parent=styles["Heading2"],
-        fontSize=13,
-        textColor=colors.HexColor("#1e40af"),
-        spaceBefore=12,
-        spaceAfter=6,
-    )
-    body_style = ParagraphStyle(
-        "CustomBody",
-        parent=styles["Normal"],
-        fontSize=10,
-        leading=16,
-        spaceAfter=8,
-    )
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            "LBTitle",
+            parent=styles["Title"],
+            fontSize=18,
+            textColor=colors.HexColor("#1e40af"),
+            spaceAfter=20,
+            alignment=TA_CENTER,
+        )
+        heading_style = ParagraphStyle(
+            "LBHeading",
+            parent=styles["Heading2"],
+            fontSize=13,
+            textColor=colors.HexColor("#1e40af"),
+            spaceBefore=12,
+            spaceAfter=6,
+        )
+        body_style = ParagraphStyle(
+            "LBBody",
+            parent=styles["Normal"],
+            fontSize=10,
+            leading=16,
+            spaceAfter=8,
+        )
 
-    story = [
-        Paragraph(req.title, title_style),
-        Spacer(1, 0.2 * inch),
-    ]
+        story = [
+            Paragraph(xml_escape(req.title), title_style),
+            Spacer(1, 0.2 * inch),
+        ]
 
-    lines = req.content.split("\n")
-    for line in lines:
-        line = line.strip()
-        if not line:
-            story.append(Spacer(1, 0.1 * inch))
-        elif line.startswith("## "):
-            story.append(Paragraph(line[3:], heading_style))
-        elif line.startswith("# "):
-            story.append(Paragraph(line[2:], heading_style))
-        elif line.startswith("**") and line.endswith("**"):
-            story.append(Paragraph(f"<b>{line[2:-2]}</b>", body_style))
-        elif line.startswith("- ") or line.startswith("* "):
-            story.append(Paragraph(f"• {line[2:]}", body_style))
-        else:
-            # Escape XML special characters
-            safe = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            story.append(Paragraph(safe, body_style))
+        for raw_line in req.content.split("\n"):
+            line = raw_line.strip()
+            if not line:
+                story.append(Spacer(1, 0.1 * inch))
+            elif line.startswith("## "):
+                story.append(Paragraph(xml_escape(line[3:]), heading_style))
+            elif line.startswith("# "):
+                story.append(Paragraph(xml_escape(line[2:]), heading_style))
+            elif line.startswith("**") and line.endswith("**") and len(line) > 4:
+                # Bold line — escape the inner text, then wrap in <b>
+                story.append(Paragraph(f"<b>{xml_escape(line[2:-2])}</b>", body_style))
+            elif line.startswith("- ") or line.startswith("* "):
+                story.append(Paragraph(f"• {xml_escape(line[2:])}", body_style))
+            else:
+                story.append(Paragraph(xml_escape(line), body_style))
 
-    doc.build(story)
-    buffer.seek(0)
+        doc.build(story)
+        buffer.seek(0)
+        logger.info("PDF built successfully")
+    except Exception as e:
+        logger.error("PDF export failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"PDF export failed: {str(e)}")
 
     filename = req.filename if req.filename.endswith(".pdf") else req.filename + ".pdf"
     return StreamingResponse(

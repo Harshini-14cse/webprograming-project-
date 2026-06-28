@@ -1,9 +1,11 @@
+import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from utils.groq_client import chat_completion
 from utils.pdf_utils import truncate_text
 from routes.upload import pdf_store
 
+logger = logging.getLogger("learnbuddy.summary")
 router = APIRouter()
 
 
@@ -13,20 +15,30 @@ class SummaryRequest(BaseModel):
 
 @router.post("/summary")
 async def generate_summary(req: SummaryRequest):
-    text = req.custom_text or pdf_store.get("text", "")
-    if not text:
+    text = req.custom_text or pdf_store.get("text") or ""
+    if not text.strip():
         raise HTTPException(status_code=400, detail="No PDF uploaded or text provided")
 
+    logger.info("Generating summary for %d chars", len(text))
     content = truncate_text(text)
     messages = [
         {
             "role": "system",
-            "content": "You are an expert academic tutor. Generate clear, structured summaries with key points, main concepts, and important details. Use markdown formatting with headers and bullet points.",
+            "content": (
+                "You are an expert academic tutor. Generate clear, structured summaries "
+                "with key points, main concepts, and important details. "
+                "Use markdown formatting with headers and bullet points."
+            ),
         },
         {
             "role": "user",
             "content": f"Please provide a comprehensive summary of the following content:\n\n{content}",
         },
     ]
-    result = chat_completion(messages)
-    return {"summary": result}
+    try:
+        result = chat_completion(messages)
+        logger.info("Summary generated (%d chars)", len(result))
+        return {"summary": result}
+    except Exception as e:
+        logger.error("Summary generation failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")

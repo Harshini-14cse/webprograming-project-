@@ -1,24 +1,36 @@
 import { useState } from 'react'
-import { Lightbulb } from 'lucide-react'
-import Card from '../components/Card'
-import Loader from '../components/Loader'
-import MarkdownRenderer from '../components/MarkdownRenderer'
-import api from '../api'
+import { motion } from 'framer-motion'
+import { Lightbulb, Sparkles, FileSearch } from 'lucide-react'
+import api from '@/api'
+import PageHeader from '@/components/PageHeader'
+import { Card } from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Alert } from '@/components/ui/Alert'
+import { SkeletonText } from '@/components/ui/Skeleton'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
+import { cn } from '@/lib/cn'
+
+const suggestions = ['Recursion', 'Photosynthesis', 'Normalization', 'Big-O Notation', 'Osmosis']
 
 export default function ConceptExplainer() {
   const [concept, setConcept] = useState('')
   const [usePdf, setUsePdf] = useState(true)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState('')
+  const [activeConcept, setActiveConcept] = useState('')
   const [error, setError] = useState('')
 
-  const explain = async () => {
-    if (!concept.trim()) return
+  const explain = async (value) => {
+    const c = (value ?? concept).trim()
+    if (!c) return
+    setConcept(c)
     setLoading(true)
     setError('')
     try {
-      const res = await api.post('/explain-concept', { concept, use_pdf: usePdf })
+      const res = await api.post('/explain-concept', { concept: c, use_pdf: usePdf })
       setResult(res.data.explanation)
+      setActiveConcept(res.data.concept || c)
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to explain concept')
     } finally {
@@ -27,43 +39,98 @@ export default function ConceptExplainer() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl">
-      <h1 className="text-2xl font-bold text-gray-900">Concept Explainer</h1>
-      <Card>
-        <input
-          value={concept}
-          onChange={e => setConcept(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && explain()}
-          placeholder="Enter a concept to explain (e.g., 'recursion', 'photosynthesis')"
-          className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-        <div className="flex items-center gap-2 mt-3">
-          <input
-            id="usePdf"
-            type="checkbox"
-            checked={usePdf}
-            onChange={e => setUsePdf(e.target.checked)}
-            className="rounded"
+    <div>
+      <PageHeader
+        icon={Lightbulb}
+        title="Concept Explainer"
+        description="Get a clear breakdown of any topic — with examples and analogies."
+      />
+
+      <Card className="p-6">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Input
+            icon={Lightbulb}
+            value={concept}
+            onChange={(e) => setConcept(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && explain()}
+            placeholder="Enter a concept, e.g. 'dynamic programming'"
+            className="flex-1"
           />
-          <label htmlFor="usePdf" className="text-sm text-gray-600">Use uploaded PDF as context</label>
+          <Button onClick={() => explain()} loading={loading} className="sm:w-auto">
+            <Sparkles className="h-4 w-4" /> Explain
+          </Button>
         </div>
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+
+        {/* PDF context toggle */}
         <button
-          onClick={explain}
-          disabled={loading || !concept.trim()}
-          className="mt-3 bg-yellow-500 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-yellow-600 disabled:opacity-50 flex items-center gap-2"
+          onClick={() => setUsePdf((v) => !v)}
+          className="mt-4 flex items-center gap-2.5 text-sm"
         >
-          <Lightbulb size={16} />
-          {loading ? 'Explaining...' : 'Explain Concept'}
+          <span
+            className={cn(
+              'relative h-6 w-10 rounded-full transition-colors',
+              usePdf ? 'bg-brand-600' : 'bg-slate-200'
+            )}
+          >
+            <span
+              className={cn(
+                'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all',
+                usePdf ? 'left-[1.125rem]' : 'left-0.5'
+              )}
+            />
+          </span>
+          <span className="flex items-center gap-1.5 font-medium text-slate-600">
+            <FileSearch className="h-4 w-4 text-slate-400" />
+            Use uploaded PDF as context
+          </span>
         </button>
+
+        {/* Suggestions */}
+        <div className="mt-5 flex flex-wrap gap-2">
+          <span className="text-xs font-medium text-slate-400">Try:</span>
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              onClick={() => explain(s)}
+              className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <Alert variant="error" className="mt-4">
+            {error}
+          </Alert>
+        )}
       </Card>
 
-      {loading && <Loader message="Explaining concept..." />}
+      {loading && (
+        <Card className="mt-6 p-6">
+          <SkeletonText lines={7} />
+        </Card>
+      )}
 
       {result && !loading && (
-        <Card title={`Explanation: ${concept}`}>
-          <MarkdownRenderer content={result} />
-        </Card>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
+          <Card className="overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-white px-6 py-4">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                <Lightbulb className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-amber-600">
+                  Concept
+                </p>
+                <h3 className="font-semibold capitalize text-slate-900">{activeConcept}</h3>
+              </div>
+            </div>
+            <div className="p-6">
+              <MarkdownRenderer content={result} />
+            </div>
+          </Card>
+        </motion.div>
       )}
     </div>
   )

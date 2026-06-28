@@ -1,8 +1,15 @@
 import { useState } from 'react'
-import { HelpCircle } from 'lucide-react'
-import Card from '../components/Card'
-import Loader from '../components/Loader'
-import api from '../api'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ListChecks, Sparkles, CheckCircle2, Eye, EyeOff } from 'lucide-react'
+import api from '@/api'
+import PageHeader from '@/components/PageHeader'
+import { Card } from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import { Textarea, Select, Label, Input } from '@/components/ui/Input'
+import { Alert } from '@/components/ui/Alert'
+import { Badge } from '@/components/ui/Badge'
+import { LoadingState } from '@/components/ui/Spinner'
+import { cn } from '@/lib/cn'
 
 export default function MCQGenerator() {
   const [numQ, setNumQ] = useState(10)
@@ -17,6 +24,7 @@ export default function MCQGenerator() {
     setLoading(true)
     setError('')
     setRevealed({})
+    setQuestions([])
     try {
       const res = await api.post('/generate-mcq', {
         num_questions: numQ,
@@ -31,96 +39,151 @@ export default function MCQGenerator() {
     }
   }
 
-  const toggle = (id) => setRevealed(prev => ({ ...prev, [id]: !prev[id] }))
+  const toggle = (i) => setRevealed((p) => ({ ...p, [i]: !p[i] }))
+  const revealAll = () => {
+    const all = {}
+    questions.forEach((_, i) => (all[i] = true))
+    setRevealed(all)
+  }
 
   return (
-    <div className="p-6 space-y-6 max-w-3xl">
-      <h1 className="text-2xl font-bold text-gray-900">MCQ Generator</h1>
-      <Card>
-        <div className="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <PageHeader
+        icon={ListChecks}
+        title="MCQ Generator"
+        description="Create multiple-choice practice questions with answers and explanations."
+      />
+
+      <Card className="p-6">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="text-sm font-medium text-gray-700">Number of Questions</label>
-            <input
+            <Label>Number of questions</Label>
+            <Input
               type="number"
-              min={1} max={30}
+              min={1}
+              max={30}
               value={numQ}
-              onChange={e => setNumQ(Number(e.target.value))}
-              className="mt-1 w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onChange={(e) => setNumQ(Number(e.target.value))}
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Difficulty</label>
-            <select
-              value={difficulty}
-              onChange={e => setDifficulty(e.target.value)}
-              className="mt-1 w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
+            <Label>Difficulty</Label>
+            <Select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
               <option value="hard">Hard</option>
-            </select>
+            </Select>
           </div>
         </div>
-        <textarea
-          value={customText}
-          onChange={e => setCustomText(e.target.value)}
-          placeholder="Optional: paste custom text (leave blank to use uploaded PDF)"
-          className="w-full border border-gray-300 rounded-lg p-3 text-sm h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-        <button
-          onClick={generate}
-          disabled={loading}
-          className="mt-3 bg-purple-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
-        >
-          <HelpCircle size={16} />
-          {loading ? 'Generating...' : 'Generate MCQs'}
-        </button>
+        <div className="mt-4">
+          <Label>Custom text (optional)</Label>
+          <Textarea
+            value={customText}
+            onChange={(e) => setCustomText(e.target.value)}
+            placeholder="Leave empty to use your uploaded PDF…"
+            className="h-24"
+          />
+        </div>
+        {error && (
+          <Alert variant="error" className="mt-4">
+            {error}
+          </Alert>
+        )}
+        <Button onClick={generate} loading={loading} className="mt-4">
+          <Sparkles className="h-4 w-4" />
+          {loading ? 'Generating…' : 'Generate MCQs'}
+        </Button>
       </Card>
 
-      {loading && <Loader message="Generating MCQ questions..." />}
+      {loading && <LoadingState message="Generating your questions…" />}
 
       {questions.length > 0 && !loading && (
-        <div className="space-y-4">
-          <p className="text-sm text-gray-500">{questions.length} questions generated. Click to reveal answers.</p>
-          {questions.map((q, i) => (
-            <div key={q.id || i} className="bg-white rounded-xl border border-gray-200 p-5">
-              <p className="font-medium text-gray-900 mb-3">
-                Q{i + 1}. {q.question}
-              </p>
-              <div className="space-y-2">
-                {q.options?.map((opt, j) => {
-                  const letter = opt.charAt(0)
-                  const isCorrect = letter === q.correct
-                  return (
-                    <div
-                      key={j}
-                      className={`px-3 py-2 rounded-lg text-sm border ${
-                        revealed[i]
-                          ? isCorrect
-                            ? 'bg-green-50 border-green-400 text-green-800 font-semibold'
-                            : 'border-gray-200 text-gray-500'
-                          : 'border-gray-200 text-gray-700'
-                      }`}
-                    >
-                      {opt}
+        <div className="mt-6">
+          <div className="mb-4 flex items-center justify-between">
+            <Badge variant="brand">{questions.length} questions</Badge>
+            <Button variant="ghost" size="sm" onClick={revealAll}>
+              <Eye className="h-4 w-4" /> Reveal all
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            {questions.map((q, i) => {
+              const isOpen = revealed[i]
+              return (
+                <motion.div
+                  key={q.id || i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                >
+                  <Card className="p-5">
+                    <div className="flex gap-3">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-sm font-semibold text-brand-700">
+                        {i + 1}
+                      </span>
+                      <p className="pt-0.5 font-medium text-slate-900">{q.question}</p>
                     </div>
-                  )
-                })}
-              </div>
-              {revealed[i] && q.explanation && (
-                <p className="mt-3 text-sm text-blue-700 bg-blue-50 p-3 rounded-lg">
-                  <strong>Explanation:</strong> {q.explanation}
-                </p>
-              )}
-              <button
-                onClick={() => toggle(i)}
-                className="mt-3 text-sm text-blue-600 hover:underline"
-              >
-                {revealed[i] ? 'Hide Answer' : 'Show Answer'}
-              </button>
-            </div>
-          ))}
+
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                      {q.options?.map((opt, j) => {
+                        const letter = opt.charAt(0)
+                        const isCorrect = letter === q.correct
+                        return (
+                          <div
+                            key={j}
+                            className={cn(
+                              'rounded-xl border px-3.5 py-2.5 text-sm transition-colors',
+                              isOpen && isCorrect
+                                ? 'border-emerald-300 bg-emerald-50 font-medium text-emerald-800'
+                                : 'border-slate-200 text-slate-600'
+                            )}
+                          >
+                            <span className="flex items-center gap-2">
+                              {isOpen && isCorrect && (
+                                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                              )}
+                              {opt}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    <AnimatePresence>
+                      {isOpen && q.explanation && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <p className="mt-3 rounded-xl bg-brand-50/60 px-4 py-3 text-sm text-slate-600">
+                            <span className="font-semibold text-brand-700">Explanation: </span>
+                            {q.explanation}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <button
+                      onClick={() => toggle(i)}
+                      className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700"
+                    >
+                      {isOpen ? (
+                        <>
+                          <EyeOff className="h-4 w-4" /> Hide answer
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="h-4 w-4" /> Show answer
+                        </>
+                      )}
+                    </button>
+                  </Card>
+                </motion.div>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>

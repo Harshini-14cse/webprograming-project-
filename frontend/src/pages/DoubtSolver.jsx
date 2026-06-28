@@ -1,7 +1,31 @@
-import { useState } from 'react'
-import { Send, MessageCircle } from 'lucide-react'
-import MarkdownRenderer from '../components/MarkdownRenderer'
-import api from '../api'
+import { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MessageCircleQuestion, Send, Sparkles, FileSearch, User } from 'lucide-react'
+import api from '@/api'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
+import { cn } from '@/lib/cn'
+
+const starters = [
+  'Explain this topic in simple terms',
+  'Give me a real-world example',
+  'What are the key points to remember?',
+  'How is this used in exams?',
+]
+
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-1.5">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="h-2 w-2 rounded-full bg-slate-300"
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+        />
+      ))}
+    </div>
+  )
+}
 
 export default function DoubtSolver() {
   const [question, setQuestion] = useState('')
@@ -9,91 +33,170 @@ export default function DoubtSolver() {
   const [loading, setLoading] = useState(false)
   const [history, setHistory] = useState([])
   const [error, setError] = useState('')
+  const endRef = useRef(null)
 
-  const ask = async () => {
-    if (!question.trim()) return
-    const q = question.trim()
-    setLoading(true)
-    setError('')
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [history, loading])
+
+  const ask = async (text) => {
+    const q = (text ?? question).trim()
+    if (!q || loading) return
     setQuestion('')
+    setError('')
+    setLoading(true)
+    setHistory((prev) => [...prev, { role: 'user', content: q }])
     try {
       const res = await api.post('/solve-doubt', { question: q, use_pdf: usePdf })
-      setHistory(prev => [...prev, { question: q, answer: res.data.answer, usedPdf: res.data.used_pdf }])
+      setHistory((prev) => [
+        ...prev,
+        { role: 'assistant', content: res.data.answer, usedPdf: res.data.used_pdf },
+      ])
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to get answer')
+      setError(err.response?.data?.detail || 'Failed to get an answer')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="p-6 max-w-3xl flex flex-col h-[calc(100vh-80px)]">
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Doubt Solver</h1>
+    <div className="flex h-[calc(100vh-11rem)] flex-col">
+      {/* Header */}
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-[var(--shadow-lifted)]">
+          <MessageCircleQuestion className="h-5 w-5" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">Doubt Solver</h1>
+          <p className="text-sm text-slate-500">Ask anything — answers use your PDF when relevant</p>
+        </div>
+      </div>
 
-      <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-1">
-        {history.length === 0 && (
-          <div className="text-center py-16 text-gray-400">
-            <MessageCircle size={48} className="mx-auto mb-3 opacity-30" />
-            <p>Ask any study-related question.</p>
-            <p className="text-sm mt-1">The AI will use your uploaded PDF as context.</p>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+        {history.length === 0 && !loading ? (
+          <div className="flex h-full flex-col items-center justify-center text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-50 text-teal-500">
+              <Sparkles className="h-8 w-8" />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold text-slate-800">How can I help you study?</h3>
+            <p className="mt-1 max-w-sm text-sm text-slate-500">
+              Ask a question or pick a starter below.
+            </p>
+            <div className="mt-6 grid w-full max-w-lg grid-cols-1 gap-2 sm:grid-cols-2">
+              {starters.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => ask(s)}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm text-slate-600 transition-all hover:-translate-y-0.5 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
-        )}
-        {history.map((item, i) => (
-          <div key={i} className="space-y-3">
-            <div className="flex justify-end">
-              <div className="bg-blue-600 text-white px-4 py-3 rounded-2xl rounded-tr-md max-w-[80%] text-sm">
-                {item.question}
+        ) : (
+          <div className="space-y-5">
+            {history.map((m, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={cn('flex gap-3', m.role === 'user' ? 'justify-end' : 'justify-start')}
+              >
+                {m.role === 'assistant' && (
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 text-white">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                )}
+                <div
+                  className={cn(
+                    'max-w-[85%] rounded-2xl px-4 py-3 text-sm',
+                    m.role === 'user'
+                      ? 'rounded-br-md bg-brand-600 text-white'
+                      : 'rounded-bl-md border border-slate-200 bg-slate-50'
+                  )}
+                >
+                  {m.role === 'user' ? (
+                    <p className="leading-relaxed">{m.content}</p>
+                  ) : (
+                    <>
+                      {m.usedPdf && (
+                        <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-700">
+                          <FileSearch className="h-3 w-3" /> Using PDF context
+                        </span>
+                      )}
+                      <MarkdownRenderer content={m.content} />
+                    </>
+                  )}
+                </div>
+                {m.role === 'user' && (
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-200 text-slate-600">
+                    <User className="h-4 w-4" />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+
+            {loading && (
+              <div className="flex gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 text-white">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div className="rounded-2xl rounded-bl-md border border-slate-200 bg-slate-50 px-4 py-4">
+                  <TypingDots />
+                </div>
               </div>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-md px-4 py-3 max-w-[90%]">
-              {item.usedPdf && (
-                <p className="text-xs text-blue-500 mb-2">📄 Using PDF context</p>
-              )}
-              <MarkdownRenderer content={item.answer} />
-            </div>
-          </div>
-        ))}
-        {loading && (
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
-            <div className="flex gap-1">
-              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-            </div>
-            Thinking...
+            )}
+            <div ref={endRef} />
           </div>
         )}
       </div>
 
-      {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
 
-      <div className="bg-white border border-gray-300 rounded-xl p-3 flex items-end gap-2">
-        <div className="flex-1">
+      {/* Composer */}
+      <div className="mt-4">
+        <div className="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-[var(--shadow-soft)] focus-within:border-brand-300 focus-within:ring-4 focus-within:ring-brand-500/10">
           <textarea
             value={question}
-            onChange={e => setQuestion(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask() } }}
-            placeholder="Ask your doubt... (Enter to send, Shift+Enter for newline)"
-            className="w-full resize-none focus:outline-none text-sm text-gray-800 min-h-[40px] max-h-32"
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                ask()
+              }
+            }}
             rows={1}
+            placeholder="Ask your doubt…  (Enter to send, Shift+Enter for newline)"
+            className="max-h-32 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
           />
-          <div className="flex items-center gap-2 mt-2">
-            <input
-              id="usePdfD"
-              type="checkbox"
-              checked={usePdf}
-              onChange={e => setUsePdf(e.target.checked)}
-              className="rounded"
-            />
-            <label htmlFor="usePdfD" className="text-xs text-gray-500">Use PDF context</label>
-          </div>
+          <button
+            onClick={() => ask()}
+            disabled={loading || !question.trim()}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white transition-all hover:bg-brand-700 active:scale-95 disabled:opacity-40"
+          >
+            <Send className="h-4 w-4" />
+          </button>
         </div>
         <button
-          onClick={ask}
-          disabled={loading || !question.trim()}
-          className="bg-blue-600 text-white p-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          onClick={() => setUsePdf((v) => !v)}
+          className="mt-2 flex items-center gap-2 px-1 text-xs"
         >
-          <Send size={16} />
+          <span
+            className={cn(
+              'relative h-5 w-9 rounded-full transition-colors',
+              usePdf ? 'bg-brand-600' : 'bg-slate-200'
+            )}
+          >
+            <span
+              className={cn(
+                'absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all',
+                usePdf ? 'left-[1.125rem]' : 'left-0.5'
+              )}
+            />
+          </span>
+          <span className="font-medium text-slate-500">Use uploaded PDF as context</span>
         </button>
       </div>
     </div>

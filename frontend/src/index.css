@@ -1,5 +1,138 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: system-ui, -apple-system, sans-serif; }
-#root { width: 100%; max-width: 100%; border: none; text-align: left; }
+/* ============================================================
+   LearnBuddy AI — Design System (Tailwind v4 theme tokens)
+   ============================================================ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+
+  /* Brand scale (indigo) */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+
+  /* Soft shadows */
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04),
+    0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 16px -4px rgba(15, 23, 42, 0.08);
+  --shadow-lifted: 0 8px 30px -8px rgba(79, 70, 229, 0.18),
+    0 4px 12px -4px rgba(15, 23, 42, 0.1);
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc; /* slate-50 */
+  color: #475569; /* slate-600 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  border: none;
+  text-align: left;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: #0f172a; /* slate-900 */
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: var(--color-brand-200);
+  color: var(--color-brand-900);
+}
+
+/* Focus ring for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Custom scrollbar
+   ============================================================ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* ============================================================
+   Reusable utilities
+   ============================================================ */
+.glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+}
+
+.skeleton {
+  background: #e2e8f0;
+  background-image: linear-gradient(
+    90deg,
+    #e2e8f0 0px,
+    #f1f5f9 40px,
+    #e2e8f0 80px
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: 0.5rem;
+}

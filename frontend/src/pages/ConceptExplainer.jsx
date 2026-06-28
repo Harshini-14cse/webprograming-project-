@@ -61,38 +61,23 @@ export default function ConceptExplainer() {
           </Button>
         </div>
 
-        {/* PDF context toggle */}
-        <button
-          onClick={() => setUsePdf((v) => !v)}
-          className="mt-4 flex items-center gap-2.5 text-sm"
-        >
-          <span
-            className={cn(
-              'relative h-6 w-10 rounded-full transition-colors',
-              usePdf ? 'bg-brand-600' : 'bg-slate-200'
-            )}
-          >
-            <span
-              className={cn(
-                'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all',
-                usePdf ? 'left-[1.125rem]' : 'left-0.5'
-              )}
-            />
+        <button onClick={() => setUsePdf((v) => !v)} className="mt-4 flex items-center gap-2.5 text-sm">
+          <span className={cn('relative h-6 w-10 rounded-full transition-colors', usePdf ? 'bg-brand-600' : 'bg-white/15')}>
+            <span className={cn('absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all', usePdf ? 'left-[1.125rem]' : 'left-0.5')} />
           </span>
-          <span className="flex items-center gap-1.5 font-medium text-slate-600">
-            <FileSearch className="h-4 w-4 text-slate-400" />
+          <span className="flex items-center gap-1.5 font-medium text-slate-300">
+            <FileSearch className="h-4 w-4 text-slate-500" />
             Use uploaded PDF as context
           </span>
         </button>
 
-        {/* Suggestions */}
         <div className="mt-5 flex flex-wrap gap-2">
-          <span className="text-xs font-medium text-slate-400">Try:</span>
+          <span className="self-center text-xs font-medium text-slate-500">Try:</span>
           {suggestions.map((s) => (
             <button
               key={s}
               onClick={() => explain(s)}
-              className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-brand-200"
             >
               {s}
             </button>
@@ -115,15 +100,13 @@ export default function ConceptExplainer() {
       {result && !loading && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
           <Card className="overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-white px-6 py-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+            <div className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-amber-500/10 to-transparent px-6 py-4">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-300">
                 <Lightbulb className="h-5 w-5" />
               </span>
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-amber-600">
-                  Concept
-                </p>
-                <h3 className="font-semibold capitalize text-slate-900">{activeConcept}</h3>
+                <p className="text-xs font-medium uppercase tracking-wide text-amber-300/80">Concept</p>
+                <h3 className="font-semibold capitalize text-slate-100">{activeConcept}</h3>
               </div>
             </div>
             <div className="p-6">

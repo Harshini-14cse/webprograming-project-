@@ -37,11 +37,7 @@ export default function ExportNotes() {
     setLoading(true)
     setError('')
     try {
-      const res = await api.post(
-        '/export-pdf',
-        { title, content, filename },
-        { responseType: 'blob' }
-      )
+      const res = await api.post('/export-pdf', { title, content, filename }, { responseType: 'blob' })
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
       const a = document.createElement('a')
       a.href = url
@@ -59,11 +55,7 @@ export default function ExportNotes() {
 
   return (
     <div>
-      <PageHeader
-        icon={Download}
-        title="Export Notes"
-        description="Turn your notes into a clean, downloadable PDF."
-      />
+      <PageHeader icon={Download} title="Export Notes" description="Turn your notes into a clean, downloadable PDF." />
 
       <div className="grid gap-6 lg:grid-cols-5">
         <Card className="p-6 lg:col-span-3">
@@ -79,12 +71,12 @@ export default function ExportNotes() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="self-center text-xs font-medium text-slate-400">Templates:</span>
+            <span className="self-center text-xs font-medium text-slate-500">Templates:</span>
             {templates.map((t) => (
               <button
                 key={t.label}
                 onClick={() => setContent(t.content)}
-                className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-brand-200"
               >
                 {t.label}
               </button>
@@ -113,30 +105,23 @@ export default function ExportNotes() {
           </Button>
         </Card>
 
-        {/* Preview / status */}
         <div className="lg:col-span-2">
           <Card className="flex h-full flex-col items-center justify-center p-8 text-center">
             <AnimatePresence mode="wait">
               {done ? (
-                <motion.div
-                  key="done"
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col items-center"
-                >
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-[var(--shadow-lifted)]">
+                <motion.div key="done" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-[var(--shadow-glow)]">
                     <Check className="h-8 w-8" />
                   </div>
-                  <h3 className="mt-4 font-semibold text-slate-800">PDF downloaded!</h3>
-                  <p className="mt-1 text-sm text-slate-500">Check your downloads folder.</p>
+                  <h3 className="mt-4 font-semibold text-slate-100">PDF downloaded!</h3>
+                  <p className="mt-1 text-sm text-slate-400">Check your downloads folder.</p>
                 </motion.div>
               ) : (
                 <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-300">
                     <FileText className="h-8 w-8" />
                   </div>
-                  <h3 className="mt-4 font-semibold text-slate-700">Ready to export</h3>
+                  <h3 className="mt-4 font-semibold text-slate-200">Ready to export</h3>
                   <p className="mt-1 max-w-xs text-sm text-slate-500">
                     Your notes will be formatted with headings, bullets and bold text into a clean PDF.
                   </p>

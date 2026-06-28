@@ -4,17 +4,17 @@ import { cn } from '@/lib/cn'
 
 const variants = {
   primary:
-    'bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800 focus-visible:ring-brand-500',
+    'bg-gradient-to-r from-brand-600 to-indigo-500 text-white shadow-[0_8px_24px_-8px_rgba(124,58,237,0.6)] hover:shadow-[0_10px_30px_-6px_rgba(124,58,237,0.8)] hover:brightness-110 focus-visible:ring-brand-500',
   secondary:
-    'bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300 focus-visible:ring-slate-400',
+    'bg-white/10 text-slate-100 hover:bg-white/15 focus-visible:ring-white/30',
   outline:
-    'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-slate-400',
+    'border border-white/15 bg-white/5 text-slate-200 hover:bg-white/10 hover:border-white/25 focus-visible:ring-white/30',
   ghost:
-    'text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-slate-300',
+    'text-slate-400 hover:bg-white/5 hover:text-white focus-visible:ring-white/20',
   danger:
-    'bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800 focus-visible:ring-red-500',
+    'bg-red-500/90 text-white shadow-[0_8px_24px_-8px_rgba(239,68,68,0.6)] hover:bg-red-500 focus-visible:ring-red-500',
   success:
-    'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:bg-emerald-800 focus-visible:ring-emerald-500',
+    'bg-emerald-500/90 text-white shadow-[0_8px_24px_-8px_rgba(16,185,129,0.6)] hover:bg-emerald-500 focus-visible:ring-emerald-500',
 }
 
 const sizes = {
@@ -43,10 +43,10 @@ const Button = forwardRef(function Button(
       type={type}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center font-medium transition-all duration-150',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
+        'inline-flex items-center justify-center font-medium transition-all duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-900',
         'disabled:pointer-events-none disabled:opacity-50',
-        'active:scale-[0.98]',
+        'active:scale-[0.97]',
         variants[variant],
         sizes[size],
         className

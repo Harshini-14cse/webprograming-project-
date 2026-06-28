@@ -70,23 +70,19 @@ export default function Summary() {
       )}
 
       {summary && !loading && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
           <Card className="overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+            <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
               <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
                   <FileText className="h-4 w-4" />
                 </span>
-                <h3 className="font-semibold text-slate-900">Summary</h3>
+                <h3 className="font-semibold text-slate-100">Summary</h3>
               </div>
               <Button variant="ghost" size="sm" onClick={copy}>
                 {copied ? (
                   <>
-                    <Check className="h-4 w-4 text-emerald-500" /> Copied
+                    <Check className="h-4 w-4 text-emerald-400" /> Copied
                   </>
                 ) : (
                   <>

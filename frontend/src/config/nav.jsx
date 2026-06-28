@@ -136,18 +136,18 @@ export const navSections = [
 
 export const allNavItems = navSections.flatMap((s) => s.items)
 
-/** Tailwind classes per accent — used by dashboard feature cards. */
+/** Tailwind classes per accent — used by dashboard feature cards (dark theme). */
 export const accentClasses = {
-  brand: 'bg-brand-50 text-brand-600',
-  sky: 'bg-sky-50 text-sky-600',
-  emerald: 'bg-emerald-50 text-emerald-600',
-  amber: 'bg-amber-50 text-amber-600',
-  violet: 'bg-violet-50 text-violet-600',
-  indigo: 'bg-indigo-50 text-indigo-600',
-  pink: 'bg-pink-50 text-pink-600',
-  orange: 'bg-orange-50 text-orange-600',
-  teal: 'bg-teal-50 text-teal-600',
-  cyan: 'bg-cyan-50 text-cyan-600',
-  lime: 'bg-lime-50 text-lime-600',
-  rose: 'bg-rose-50 text-rose-600',
+  brand: 'bg-brand-500/15 text-brand-300',
+  sky: 'bg-sky-500/15 text-sky-300',
+  emerald: 'bg-emerald-500/15 text-emerald-300',
+  amber: 'bg-amber-500/15 text-amber-300',
+  violet: 'bg-violet-500/15 text-violet-300',
+  indigo: 'bg-indigo-500/15 text-indigo-300',
+  pink: 'bg-pink-500/15 text-pink-300',
+  orange: 'bg-orange-500/15 text-orange-300',
+  teal: 'bg-teal-500/15 text-teal-300',
+  cyan: 'bg-cyan-500/15 text-cyan-300',
+  lime: 'bg-lime-500/15 text-lime-300',
+  rose: 'bg-rose-500/15 text-rose-300',
 }

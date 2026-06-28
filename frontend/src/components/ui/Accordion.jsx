@@ -15,8 +15,8 @@ export function Accordion({ items = [], defaultOpen = 0 }) {
           <div
             key={i}
             className={cn(
-              'overflow-hidden rounded-2xl border bg-white transition-colors',
-              isOpen ? 'border-brand-200 shadow-[var(--shadow-card)]' : 'border-slate-200'
+              'overflow-hidden rounded-2xl border transition-colors',
+              isOpen ? 'border-brand-500/40 bg-white/[0.05]' : 'border-white/10 bg-white/[0.025]'
             )}
           >
             <button
@@ -27,17 +27,17 @@ export function Accordion({ items = [], defaultOpen = 0 }) {
                 <span
                   className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors',
-                    isOpen ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-500'
+                    isOpen ? 'bg-gradient-to-br from-brand-600 to-indigo-500 text-white' : 'bg-white/5 text-slate-400'
                   )}
                 >
-                  <Icon className="h-4.5 w-4.5" />
+                  <Icon className="h-4 w-4" />
                 </span>
               )}
-              <span className="flex-1 font-medium text-slate-800">{item.title}</span>
+              <span className="flex-1 font-medium text-slate-200">{item.title}</span>
               <ChevronDown
                 className={cn(
-                  'h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200',
-                  isOpen && 'rotate-180 text-brand-500'
+                  'h-5 w-5 shrink-0 text-slate-500 transition-transform duration-200',
+                  isOpen && 'rotate-180 text-brand-400'
                 )}
               />
             </button>
@@ -49,9 +49,7 @@ export function Accordion({ items = [], defaultOpen = 0 }) {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.25, ease: 'easeInOut' }}
                 >
-                  <div className="border-t border-slate-100 px-5 py-4">
-                    {item.content}
-                  </div>
+                  <div className="border-t border-white/5 px-5 py-4 text-slate-400">{item.content}</div>
                 </motion.div>
               )}
             </AnimatePresence>

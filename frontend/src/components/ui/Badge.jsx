@@ -1,11 +1,11 @@
 import { cn } from '@/lib/cn'
 
 const variants = {
-  brand: 'bg-brand-50 text-brand-700 ring-brand-600/10',
-  slate: 'bg-slate-100 text-slate-600 ring-slate-500/10',
-  success: 'bg-emerald-50 text-emerald-700 ring-emerald-600/10',
-  warning: 'bg-amber-50 text-amber-700 ring-amber-600/10',
-  danger: 'bg-red-50 text-red-700 ring-red-600/10',
+  brand: 'bg-brand-500/15 text-brand-300 ring-brand-400/20',
+  slate: 'bg-white/5 text-slate-300 ring-white/10',
+  success: 'bg-emerald-500/15 text-emerald-300 ring-emerald-400/20',
+  warning: 'bg-amber-500/15 text-amber-300 ring-amber-400/20',
+  danger: 'bg-red-500/15 text-red-300 ring-red-400/20',
 }
 
 export function Badge({ children, variant = 'slate', className = '', ...props }) {

@@ -10,17 +10,13 @@ export function PageHeader({ title, description, icon: Icon, actions }) {
     >
       <div className="flex items-center gap-4">
         {Icon && (
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-[var(--shadow-lifted)]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-500 text-white shadow-[var(--shadow-glow)]">
             <Icon className="h-6 w-6" />
           </div>
         )}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-[1.7rem]">
-            {title}
-          </h1>
-          {description && (
-            <p className="mt-1 text-sm text-slate-500">{description}</p>
-          )}
+          <h1 className="text-2xl font-bold tracking-tight text-slate-100 sm:text-[1.7rem]">{title}</h1>
+          {description && <p className="mt-1 text-sm text-slate-400">{description}</p>}
         </div>
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}

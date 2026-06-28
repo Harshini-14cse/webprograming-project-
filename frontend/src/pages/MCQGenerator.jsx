@@ -58,13 +58,7 @@ export default function MCQGenerator() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <Label>Number of questions</Label>
-            <Input
-              type="number"
-              min={1}
-              max={30}
-              value={numQ}
-              onChange={(e) => setNumQ(Number(e.target.value))}
-            />
+            <Input type="number" min={1} max={30} value={numQ} onChange={(e) => setNumQ(Number(e.target.value))} />
           </div>
           <div>
             <Label>Difficulty</Label>
@@ -110,18 +104,13 @@ export default function MCQGenerator() {
             {questions.map((q, i) => {
               const isOpen = revealed[i]
               return (
-                <motion.div
-                  key={q.id || i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                >
+                <motion.div key={q.id || i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
                   <Card className="p-5">
                     <div className="flex gap-3">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-sm font-semibold text-brand-700">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-500/15 text-sm font-semibold text-brand-300">
                         {i + 1}
                       </span>
-                      <p className="pt-0.5 font-medium text-slate-900">{q.question}</p>
+                      <p className="pt-0.5 font-medium text-slate-100">{q.question}</p>
                     </div>
 
                     <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -134,14 +123,12 @@ export default function MCQGenerator() {
                             className={cn(
                               'rounded-xl border px-3.5 py-2.5 text-sm transition-colors',
                               isOpen && isCorrect
-                                ? 'border-emerald-300 bg-emerald-50 font-medium text-emerald-800'
-                                : 'border-slate-200 text-slate-600'
+                                ? 'border-emerald-400/40 bg-emerald-500/10 font-medium text-emerald-200'
+                                : 'border-white/10 text-slate-300'
                             )}
                           >
                             <span className="flex items-center gap-2">
-                              {isOpen && isCorrect && (
-                                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                              )}
+                              {isOpen && isCorrect && <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />}
                               {opt}
                             </span>
                           </div>
@@ -151,24 +138,16 @@ export default function MCQGenerator() {
 
                     <AnimatePresence>
                       {isOpen && q.explanation && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <p className="mt-3 rounded-xl bg-brand-50/60 px-4 py-3 text-sm text-slate-600">
-                            <span className="font-semibold text-brand-700">Explanation: </span>
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                          <p className="mt-3 rounded-xl border border-brand-500/20 bg-brand-500/10 px-4 py-3 text-sm text-slate-300">
+                            <span className="font-semibold text-brand-300">Explanation: </span>
                             {q.explanation}
                           </p>
                         </motion.div>
                       )}
                     </AnimatePresence>
 
-                    <button
-                      onClick={() => toggle(i)}
-                      className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700"
-                    >
+                    <button onClick={() => toggle(i)} className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-brand-300 hover:text-brand-200">
                       {isOpen ? (
                         <>
                           <EyeOff className="h-4 w-4" /> Hide answer

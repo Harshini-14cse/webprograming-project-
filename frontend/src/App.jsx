@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import Sidebar from '@/components/layout/Sidebar'
@@ -48,11 +48,21 @@ function AnimatedRoutes() {
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('lb_sidebar_collapsed') === '1')
+
+  useEffect(() => {
+    localStorage.setItem('lb_sidebar_collapsed', collapsed ? '1' : '0')
+  }, [collapsed])
 
   return (
     <BrowserRouter>
-      <div className="flex h-screen overflow-hidden bg-slate-50">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          collapsed={collapsed}
+          onToggleCollapse={() => setCollapsed((c) => !c)}
+        />
         <div className="flex min-w-0 flex-1 flex-col">
           <Header onMenuClick={() => setSidebarOpen(true)} />
           <main className="flex-1 overflow-y-auto">
